@@ -18,11 +18,24 @@ namespace AcTools.Render.Base.Reflections {
 
         public Vector4[] Values => _values;
 
+        private static bool _shProjectionUnavailable;
+
         protected override void OnCubemapUpdate(DeviceContextHolder holder) {
             base.OnCubemapUpdate(holder);
 
+            if (_shProjectionUnavailable) return;
+
             var buffer = _buffer;
-            ShProjectCubeMap(holder.DeviceContext, 3, CubeTex, buffer[0], buffer[1], buffer[2]);
+            try {
+                ShProjectCubeMap(holder.DeviceContext, 3, CubeTex, buffer[0], buffer[1], buffer[2]);
+            } catch (Exception e) {
+                // Wine only stubs D3DX11SHProjectCubeMap, so without the original DirectX runtime there is
+                // no ambient from spherical harmonics, but the rest of the scene still renders
+                _shProjectionUnavailable = true;
+                AcToolsLogging.Write("Failed to project cubemap, ambient from light probes disabled: " + e);
+                return;
+            }
+
             for (var i = 0; i < 9; i++) {
                 _values[i].X = buffer[0][i];
                 _values[i].Y = buffer[1][i];
