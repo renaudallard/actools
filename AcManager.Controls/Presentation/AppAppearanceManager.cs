@@ -15,6 +15,7 @@ using AcManager.Tools.Data;
 using AcManager.Tools.Helpers;
 using AcTools.Utils;
 using AcTools.Utils.Helpers;
+using AcTools.Windows;
 using FirstFloor.ModernUI;
 using FirstFloor.ModernUI.Helpers;
 using FirstFloor.ModernUI.Presentation;
@@ -186,7 +187,7 @@ namespace AcManager.Controls.Presentation {
                 LargerTitleLinks = ValuesStorage.Get<bool>(KeyLargerTitleLinks);
                 BoldTitleLinks = ValuesStorage.Get<bool>(KeyBoldTitleLinks);
                 BitmapScalingMode = ValuesStorage.Get(KeyBitmapScaling, BitmapScalingMode.HighQuality);
-                SoftwareRenderingMode = ValuesStorage.Get<bool>(KeySoftwareRendering);
+                SoftwareRenderingMode = ValuesStorage.Get(KeySoftwareRendering, WineHelper.IsOnWine);
                 LargeSubMenuFont = ValuesStorage.Get<bool>(KeyLargeSubMenuFont);
                 ShowSubMenuDraggableIcons = ValuesStorage.Get(KeyShowSubMenuDraggableIcons, true);
                 PopupToolBars = ValuesStorage.Get<bool>(KeyPopupToolBars);

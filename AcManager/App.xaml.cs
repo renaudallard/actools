@@ -215,7 +215,10 @@ namespace AcManager {
         }
 
         public static bool IsSoftwareRenderingModeEnabled() {
-            return AppArguments.GetBool(AppFlag.SoftwareRendering) || ValuesStorage.Get<bool>(AppAppearanceManager.KeySoftwareRendering)
+            // Under Wine hardware rendering means Direct3D 9, which is either missing or broken on most
+            // translation layers, so software rendering is the default there until turned off manually.
+            return AppArguments.GetBool(AppFlag.SoftwareRendering)
+                    || ValuesStorage.Get(AppAppearanceManager.KeySoftwareRendering, WineHelper.IsOnWine)
                     || MainExecutingFile.Name.IndexOf(@"safe", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
