@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -140,7 +141,18 @@ App version: {BuildInformation.AppVersion}.", CmApiProvider.UserAgent);
                         Logging.Warning("Can’t attach Arguments.txt: " + e);
                     }
 
-                    foreach (var fileInfo in new DirectoryInfo(AcPaths.GetDocumentsCfgDirectory()).GetFiles("*.ini").Where(x => x.Length < 500000).Take(100)) {
+                    // Those directories only exist once AC has been run at least once, and listing a missing
+                    // one would throw before anything gets attached
+                    IEnumerable<FileInfo> SmallIniFiles(string directory) {
+                        try {
+                            return new DirectoryInfo(directory).GetFiles("*.ini").Where(x => x.Length < 500000).Take(100);
+                        } catch (Exception e) {
+                            Logging.Warning("Can’t list " + directory + ": " + e);
+                            return new FileInfo[0];
+                        }
+                    }
+
+                    foreach (var fileInfo in SmallIniFiles(AcPaths.GetDocumentsCfgDirectory())) {
                         try {
                             writer.Write("Config/" + fileInfo.Name, fileInfo.FullName);
                         } catch (Exception e) {
@@ -149,9 +161,7 @@ App version: {BuildInformation.AppVersion}.", CmApiProvider.UserAgent);
                     }
 
                     if (AcRootDirectory.Instance.Value != null) {
-                        foreach (var fileInfo in new DirectoryInfo(AcPaths.GetSystemCfgDirectory(AcRootDirectory.Instance.RequireValue)).GetFiles("*.ini")
-                                                                                                                                 .Where(x => x.Length < 500000)
-                                                                                                                                 .Take(100)) {
+                        foreach (var fileInfo in SmallIniFiles(AcPaths.GetSystemCfgDirectory(AcRootDirectory.Instance.RequireValue))) {
                             try {
                                 writer.Write("SysConfig/" + fileInfo.Name, fileInfo.FullName);
                             } catch (Exception e) {
