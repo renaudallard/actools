@@ -205,23 +205,36 @@ namespace AcManager.Pages.AcSettings {
             if (_imageEx == null || renderer == null
                     || !renderer.IsDirty && _lastTarget != IntPtr.Zero && _setCount > 3) return;
 
-            renderer.Draw();
+            try {
+                renderer.Draw();
 
-            var target = renderer.GetRenderTarget();
-            if (target != _lastTarget || _setCount < 3) {
-                _imageEx.SetBackBufferEx(D3DResourceTypeEx.ID3D11Texture2D, target);
-                _setCount++;
-                _lastTarget = target;
+                var target = renderer.GetRenderTarget();
+                if (target != _lastTarget || _setCount < 3) {
+                    _imageEx.SetBackBufferEx(D3DResourceTypeEx.ID3D11Texture2D, target);
+                    _setCount++;
+                    _lastTarget = target;
+                }
+
+                _imageEx.Lock();
+                try {
+                    _imageEx.AddDirtyRect(new Int32Rect {
+                        X = 0,
+                        Y = 0,
+                        Height = _imageEx.PixelHeight,
+                        Width = _imageEx.PixelWidth
+                    });
+                } finally {
+                    _imageEx.Unlock();
+                }
+            } catch (Exception ex) {
+                // Handing a D3D11 texture to WPF needs shared surfaces from D3D9Ex, which Wine does not
+                // implement, and there is no handler above a rendering callback to stop the app from dying
+                CompositionTargetEx.Rendering -= OnRendering;
+                Scene.Source = null;
+                _imageEx = null;
+                DisposeHelper.Dispose(ref _renderer);
+                NonfatalError.Notify("Can’t display chase camera preview", ex);
             }
-
-            _imageEx.Lock();
-            _imageEx.AddDirtyRect(new Int32Rect {
-                X = 0,
-                Y = 0,
-                Height = _imageEx.PixelHeight,
-                Width = _imageEx.PixelWidth
-            });
-            _imageEx.Unlock();
         }
 
         private void SetRendererSize([NotNull] BaseRenderer renderer) {
