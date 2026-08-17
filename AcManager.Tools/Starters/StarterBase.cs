@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AcManager.Tools.Helpers;
 using AcManager.Tools.Managers;
 using AcTools.DataFile;
 using AcTools.Processes;
@@ -131,6 +132,22 @@ namespace AcManager.Tools.Starters {
             Environment.SetEnvironmentVariable("PYTHONHOME", string.Empty);
             Environment.SetEnvironmentVariable("PYTHONOPTIMIZE", string.Empty);
             Environment.SetEnvironmentVariable("PYTHONPATH", string.Empty);
+
+            // Set for this process so the game inherits them, one NAME=VALUE per line
+            var extra = SettingsHolder.Drive.GameEnvironment;
+            if (string.IsNullOrWhiteSpace(extra)) return;
+
+            foreach (var line in extra.Split('\n')) {
+                var separator = line.IndexOf('=');
+                if (separator <= 0) continue;
+
+                var name = line.Substring(0, separator).Trim();
+                if (name.Length == 0) continue;
+
+                var value = line.Substring(separator + 1).Trim();
+                Logging.Debug($"Environment variable for the game: {name}={value}");
+                Environment.SetEnvironmentVariable(name, value);
+            }
         }
 
         public virtual async Task WaitGameAsync(CancellationToken cancellation) {

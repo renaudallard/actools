@@ -414,6 +414,23 @@ namespace AcManager.Tools.Helpers {
                 }
             }
 
+            private string _gameEnvironment;
+
+            /// <summary>
+            /// Extra environment variables for the game process, one NAME=VALUE per line. Handy under Wine,
+            /// where the game and the app might need different Direct3D translation layers.
+            /// </summary>
+            public string GameEnvironment {
+                get => _gameEnvironment ?? (_gameEnvironment = ValuesStorage.Get("Settings.DriveSettings.GameEnvironment", ""));
+                set {
+                    value = value.Trim();
+                    if (Equals(value, _gameEnvironment)) return;
+                    _gameEnvironment = value;
+                    ValuesStorage.Set("Settings.DriveSettings.GameEnvironment", value);
+                    OnPropertyChanged();
+                }
+            }
+
             private string _cmLaunchCommand;
 
             public string CmLaunchCommand {

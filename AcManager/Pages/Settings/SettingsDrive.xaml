@@ -398,6 +398,20 @@
           <mui:BetterTextBox Text="{Binding Drive.PostCommand}" Placeholder="{x:Static t:ToolsStrings.Common_None}" />
         </DockPanel>
 
+        <DockPanel set:Search.Keywords="environment;variables;wine">
+          <DockPanel.ToolTip>
+            <ToolTip>
+              <StackPanel Margin="4">
+                <mui:BbCodeBlock TextWrapping="WrapWithOverflow" MaxWidth="480"
+                    Text="Extra environment variables for the game, one [i]NAME=VALUE[/i] per line. Under Wine this is how the game can be given a different Direct3D translation layer than the app itself." />
+              </StackPanel>
+            </ToolTip>
+          </DockPanel.ToolTip>
+          <Label Content="Game environment" />
+          <mui:BetterTextBox Text="{Binding Drive.GameEnvironment}" Placeholder="{x:Static t:ToolsStrings.Common_None}"
+              AcceptsReturn="True" TextWrapping="NoWrap" MaxHeight="80" />
+        </DockPanel>
+
         <DockPanel>
           <DockPanel.ToolTip>
             <ToolTip>
