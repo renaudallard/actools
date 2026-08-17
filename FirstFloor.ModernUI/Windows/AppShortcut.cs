@@ -26,8 +26,16 @@ namespace FirstFloor.ModernUI.Windows {
             if (AppUserModelId == null) throw new Exception("AppUserModelId not set");
 
             if (!File.Exists(ShortcutLocation)) return false;
-            using (var shortcut = new ShellLink(ShortcutLocation)) {
-                return shortcut.AppUserModelId == AppUserModelId;
+
+            try {
+                using (var shortcut = new ShellLink(ShortcutLocation)) {
+                    return shortcut.AppUserModelId == AppUserModelId;
+                }
+            } catch (Exception e) {
+                // Reading the model ID needs IPropertyStore, which Wine does not implement, and this runs
+                // from command predicates where a throw would break the whole settings page
+                Logging.Warning("Can’t read shortcut: " + e);
+                return false;
             }
         }
 
