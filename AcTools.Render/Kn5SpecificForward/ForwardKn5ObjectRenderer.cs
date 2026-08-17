@@ -715,11 +715,21 @@ Bloom: {(UseBloom ? "Yes" : "No")}
 Magick.NET: {(ImageUtils.IsMagickSupported ? "Yes" : "No")}".Trim();
         }
 
+        private bool _textBlockUnavailable;
+
         protected override void DrawSpritesInner() {
-            if (!VisibleUi || ShotDrawInProcess) return;
+            if (!VisibleUi || ShotDrawInProcess || _textBlockUnavailable) return;
 
             if (_textBlock == null) {
-                _textBlock = new TextBlockRenderer(Sprite, "Arial", FontWeight.Normal, FontStyle.Normal, FontStretch.Normal, 24f);
+                try {
+                    _textBlock = new TextBlockRenderer(Sprite, "Arial", FontWeight.Normal, FontStyle.Normal, FontStretch.Normal, 24f);
+                } catch (Exception e) {
+                    // Drawing text needs a second D3D10.1 device with Direct2D and DirectWrite sharing a
+                    // surface with this one. Without it there is no overlay, but the scene renders fine
+                    _textBlockUnavailable = true;
+                    AcToolsLogging.Write("Failed to create text renderer, no on-screen information: " + e);
+                    return;
+                }
             }
 
             _textBlock.DrawString(GetInformationString(),
