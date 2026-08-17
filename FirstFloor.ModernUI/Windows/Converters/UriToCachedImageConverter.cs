@@ -56,7 +56,7 @@ namespace FirstFloor.ModernUI.Windows.Converters {
                         ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
                 bi.CacheOption = BitmapCacheOption.OnLoad;
                 bi.UriSource = source;
-                bi.EndInit();
+                BetterImage.DecodeLocked(bi.EndInit);
                 bi.Freeze();
 
                 if (considerOneTrueDpi && (Math.Abs(bi.DpiX - OneTrueDpi) > 1 || Math.Abs(bi.DpiY - OneTrueDpi) > 1)) {

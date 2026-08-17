@@ -413,7 +413,7 @@ namespace AcManager.CustomShowroom {
                     image.CacheOption = BitmapCacheOption.OnLoad;
                     image.UriSource = null;
                     image.StreamSource = stream;
-                    image.EndInit();
+                    FirstFloor.ModernUI.Windows.Controls.BetterImage.DecodeLocked(image.EndInit);
                 }
                 image.Freeze();
 
@@ -447,7 +447,7 @@ namespace AcManager.CustomShowroom {
                     image.CacheOption = BitmapCacheOption.OnLoad;
                     image.UriSource = null;
                     image.StreamSource = stream;
-                    image.EndInit();
+                    FirstFloor.ModernUI.Windows.Controls.BetterImage.DecodeLocked(image.EndInit);
                 }
                 image.Freeze();
 

@@ -247,7 +247,7 @@ namespace AcManager.Pages.Settings {
                 bi.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bi.CacheOption = BitmapCacheOption.OnLoad;
                 bi.UriSource = new Uri(filename);
-                bi.EndInit();
+                BetterImage.DecodeLocked(bi.EndInit);
                 bi.Freeze();
                 return bi;
             }

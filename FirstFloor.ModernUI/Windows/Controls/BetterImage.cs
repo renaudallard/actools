@@ -742,6 +742,19 @@ namespace FirstFloor.ModernUI.Windows.Controls {
         public static object WineDecodeLock;
 
         /// <summary>
+        /// Image decoding is not thread-safe under Wine, so every EndInit() call has to go through here.
+        /// </summary>
+        public static void DecodeLocked([NotNull] Action decode) {
+            if (WineDecodeLock == null) {
+                decode();
+            } else {
+                lock (WineDecodeLock) {
+                    decode();
+                }
+            }
+        }
+
+        /// <summary>
         /// Safe (handles all exceptions inside).
         /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining), HandleProcessCorruptedStateExceptions, SecurityCritical]
@@ -778,14 +791,7 @@ namespace FirstFloor.ModernUI.Windows.Controls {
                     bi.CacheOption = BitmapCacheOption.OnLoad;
                     bi.StreamSource = stream;
 
-                    if (WineDecodeLock != null) {
-                        lock (WineDecodeLock) {
-                            bi.EndInit();
-                        }
-                    } else {
-                        bi.EndInit();
-                    }
-                    
+                    DecodeLocked(bi.EndInit);
                     bi.Freeze();
 
                     if (decodeWidth <= 0) {

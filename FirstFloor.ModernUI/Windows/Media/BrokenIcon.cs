@@ -21,7 +21,7 @@ namespace FirstFloor.ModernUI.Windows.Media {
                 bi.BeginInit();
                 bi.CacheOption = BitmapCacheOption.OnLoad;
                 bi.StreamSource = stream;
-                bi.EndInit();
+                Controls.BetterImage.DecodeLocked(bi.EndInit);
                 bi.Freeze();
                 return bi;
             }
