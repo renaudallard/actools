@@ -72,7 +72,11 @@ namespace AcManager.Tools.Managers {
             // SavingAll?.Invoke(this, EventArgs.Empty);
         }
 
-        private void RescanManagers() {
+        /// <summary>
+        /// Rescans every content directory. Normally file watchers keep everything up to date, but they
+        /// do not work in some environments, Wine being one of them.
+        /// </summary>
+        public void RescanManagers() {
             var w = Stopwatch.StartNew();
             foreach (var manager in _managers) {
                 manager.Rescan();

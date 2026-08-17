@@ -16,6 +16,8 @@
           <Label Content="{x:Static g:AppStrings.Settings_General_AcFolderLabel}" />
           <Button Command="{Binding ChangeAcRootCommand}" Content="{x:Static c:ControlsStrings.Common_Change}" />
           <Button Command="{Binding OpenAcRootCommand}" Content="{x:Static g:AppStrings.Settings_General_Open}" />
+          <Button Command="{Binding ReloadContentCommand}" Content="{x:Static g:AppStrings.Toolbar_Refresh}"
+              ToolTip="Rescan content folders. Needed when the system does not report file changes, which is the case under Wine" />
           <mui:PathTrimmingTextBlock Text="{Binding AcRootDirectoryValue, Mode=OneTime}" />
         </DockPanel>
 

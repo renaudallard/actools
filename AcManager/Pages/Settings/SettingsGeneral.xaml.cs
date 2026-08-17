@@ -87,6 +87,11 @@ namespace AcManager.Pages.Settings {
             public DelegateCommand OpenAcRootCommand
                 => _openAcRootCommand ?? (_openAcRootCommand = new DelegateCommand(() => { WindowsHelper.OpenFile(AcRootDirectory.Instance.RequireValue); }));
 
+            private DelegateCommand _reloadContentCommand;
+
+            public DelegateCommand ReloadContentCommand
+                => _reloadContentCommand ?? (_reloadContentCommand = new DelegateCommand(() => { Superintendent.Instance.RescanManagers(); }));
+
             private DelegateCommand _changeAcRootCommand;
 
             public DelegateCommand ChangeAcRootCommand => _changeAcRootCommand ?? (_changeAcRootCommand = new DelegateCommand(() => {
