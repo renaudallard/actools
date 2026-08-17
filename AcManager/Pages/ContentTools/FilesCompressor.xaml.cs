@@ -43,6 +43,9 @@ namespace AcManager.Pages.ContentTools {
         private static IEnumerable<string> GetNonAvailableReason() {
             if (!WindowsVersionHelper.IsWindows10OrGreater) {
                 yield return "Tool “compact.exe” was added in Windows 10";
+            } else if (!File.Exists(Path.Combine(Environment.SystemDirectory, "compact.exe"))) {
+                // Wine reports Windows 10 and calls its file systems NTFS, but has no compact.exe
+                yield return "Tool “compact.exe” is missing";
             }
 
             var format = DriveInfo.GetDrives().FirstOrDefault(x => x.RootDirectory.FullName == Path.GetPathRoot(AcRootDirectory.Instance.Value))?.DriveFormat;
