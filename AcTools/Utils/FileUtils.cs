@@ -48,7 +48,7 @@ namespace AcTools.Utils {
             public FileOperationFlags fFlags;
 
             [MarshalAs(UnmanagedType.Bool)]
-            public readonly bool fAnyOperationsAborted;
+            public bool fAnyOperationsAborted;
 
             public readonly IntPtr hNameMappings;
             public readonly string lpszProgressTitle;
@@ -66,8 +66,7 @@ namespace AcTools.Utils {
                     pFrom = string.Join("\0", path.Where(x => x != null)) + "\0\0",
                     fFlags = flags
                 };
-                SHFileOperation(ref fs);
-                return true;
+                return SHFileOperation(ref fs) == 0 && !fs.fAnyOperationsAborted;
             } catch (Exception) {
                 return false;
             }
