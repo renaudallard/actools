@@ -100,7 +100,11 @@ namespace AcTools.Processes {
                     }
 
                     File.Delete(_acLauncherBackup);
-                } catch (IOException) { }
+                } catch (Exception e) {
+                    // Any failure has to be retried, not just IO ones: giving up early leaves the
+                    // installation with a renamed launcher, which Steam then reports as damaged
+                    AcToolsLogging.Write($"Failed to restore original launcher: {e}");
+                }
 
                 Thread.Sleep(WaitIter);
             }
@@ -172,7 +176,11 @@ namespace AcTools.Processes {
                     }
 
                     File.Delete(_acLauncherBackup);
-                } catch (IOException) { }
+                } catch (Exception e) {
+                    // Any failure has to be retried, not just IO ones: giving up early leaves the
+                    // installation with a renamed launcher, which Steam then reports as damaged
+                    AcToolsLogging.Write($"Failed to restore original launcher: {e}");
+                }
 
                 await Task.Delay(WaitIter, cancellation);
                 if (cancellation.IsCancellationRequested) return;
