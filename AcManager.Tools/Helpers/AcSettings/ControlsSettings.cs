@@ -45,7 +45,14 @@ namespace AcManager.Tools.Helpers.AcSettings {
         static ControlsSettings() {
             PresetsDirectory = Path.Combine(AcPaths.GetDocumentsCfgDirectory(), "controllers");
             UserPresetsDirectory = Path.Combine(PresetsDirectory, SubUserPresets);
-            Directory.CreateDirectory(UserPresetsDirectory);
+
+            try {
+                Directory.CreateDirectory(UserPresetsDirectory);
+            } catch (Exception e) {
+                // A throw here would be cached as a type initialization failure for the rest of the session,
+                // taking every controls page down with it, while a missing directory only means no presets
+                Logging.Warning("Can’t create presets directory: " + e);
+            }
         }
 
         private static string CapitalizeFirst(string s) {
