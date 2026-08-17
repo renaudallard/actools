@@ -90,3 +90,49 @@ Set of utils and apps designed for Assetto Corsa. Some obsolete projects are mov
  - You might need to install DirectX SDK to rebuild [AcTools.Render/Shaders/Shaders.tt](https://github.com/gro-ove/actools/blob/master/AcTools.Render/Shaders/Shaders.tt). But, just in case, built *Shaders.cs* and *Shaders.resources* are already included. Also, it takes quite a long time to rebuild those shaders, up to 5–10 minutes on my PC.
 
  - Feel free to [contact me](https://trello.com/c/w5xT6ssZ/49-contacts) anytime. I don’t have any experience with open-source projects, but I’d be glad to learn.
+
+# Running under Wine (CrossOver on macOS, Proton and plain Wine on Linux)
+
+Content Manager is a WPF app, so it needs the real .NET Framework in the prefix; Wine Mono is not a
+substitute. Install .NET Framework 4.8 (CrossOver has its own installer for it) into a 64‑bit Windows 10
+bottle. The x86 build is the one to use: Wine runs 32‑bit Windows apps inside 64‑bit prefixes.
+
+Keep Content Manager and Assetto Corsa in the **same** prefix. The race is handed over through
+`Documents\Assetto Corsa\cfg\race.ini` and shared memory at `Local\acpmf_*`, neither of which crosses a
+prefix boundary, so a split setup silently reports every race as cancelled.
+
+### Prefix prerequisites
+
+ - `winetricks d3dx11_43`, or the DirectX June 2010 End‑User Runtime. Wine ships `d3dx11_43` as a stub, and
+   Assetto Corsa aborts on `D3DX11CreateShaderResourceViewFromFileW` while loading its first GUI texture.
+   The same install restores ambient from light probes in Custom Showroom.
+
+ - `winetricks corefonts` plus a replacement for Segoe UI, which the interface asks for by name.
+
+ - A Windows Steam client inside the prefix, started before a race. There is no bridge to a Steam client
+   running natively on the host.
+
+### What the app does by itself
+
+ - Software rendering for the interface is the default when Wine is detected, because WPF draws through
+   Direct3D 9 and no Metal‑based translation layer implements it. It stays a normal setting, so it can be
+   turned off in Settings/Appearance. There is no need to rename the executable to include *safe* anymore.
+
+ - Window transparency is disabled, and image decoding is serialised, both only under Wine.
+
+ - Failures in optional pieces (light probes, the chase camera preview, the showroom overlay) are contained
+   instead of taking the app down.
+
+### Settings worth knowing about
+
+ - **Settings/General, Refresh next to the AC folder.** Wine does not report file changes on macOS, so
+   content lists do not update on their own. This rescans them.
+
+ - **Settings/Drive, Game environment.** Extra environment variables for the game process, one
+   `NAME=VALUE` per line. Useful when the game needs a different Direct3D translation layer than the app,
+   for example `WINEDLLOVERRIDES=d3d11,dxgi=n`.
+
+Do not set `HideWineExports=Y`. Some guides suggest it so Custom Shaders Patch believes it is on Windows,
+but it also hides Wine from Content Manager and turns off everything listed above.
+
+Force feedback does not work: Wine's macOS input backend has no haptics at all.
