@@ -114,7 +114,10 @@ namespace AcManager.Tools.Helpers {
                 var regKey = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
                 if (regKey == null) yield break;
 
-                var steamPath = regKey.GetValue("SteamPath").ToString();
+                // Key can be there without a path in it, for instance in a Wine prefix with no Steam installed
+                var steamPath = regKey.GetValue("SteamPath") as string;
+                if (string.IsNullOrWhiteSpace(steamPath)) yield break;
+
                 var config = File.ReadAllText(Path.Combine(steamPath, @"config", @"loginusers.vdf"));
 
                 parsed = Vdf.Parse(config).Children.GetValueOrDefault("users");
