@@ -92,18 +92,18 @@ namespace AcManager.Tools.Starters {
             }
 
             if (!initialized) {
-                if (!IsFullyIntegrated) {
-                    MessageBox.Show("Failed to initialize Steam. Make sure Steam is running, or change the starter in Drive settings to something else.",
-                            "Steam in not responding", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                } else {
+                if (IsFullyIntegrated) {
                     Logging.Write("Still not initialized, asking Steam to restart AC…");
-                    if (!SteamAPI.RestartAppIfNecessary(new AppId_t(244210u))) {
-                        MessageBox.Show("Failed to initialize Steam. Make sure Steam is running, or change the starter in Drive settings to something else.",
-                                "Steam in not responding", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                    if (SteamAPI.RestartAppIfNecessary(new AppId_t(244210u))) {
+                        // Steam is going to start the app again, so this instance has to quit
+                        Logging.Write("Steam is restarting the app, exiting");
+                        Environment.Exit(0);
                     }
                 }
-                Logging.Write("Steam failed to initialize, existing.");
-                Environment.Exit(0);
+
+                MessageBox.Show("Failed to initialize Steam. Make sure Steam is running, or change the starter in Drive settings to something else.",
+                        "Steam in not responding", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                throw new Exception("Failed to initialize Steam");
             }
 
             Logging.Debug($"Steam API is ready: {SteamUser.GetSteamID()}");
