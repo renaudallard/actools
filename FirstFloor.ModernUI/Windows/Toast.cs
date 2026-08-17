@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using FirstFloor.ModernUI.Helpers;
 using JetBrains.Annotations;
 
@@ -64,6 +65,8 @@ namespace FirstFloor.ModernUI.Windows {
 #endif
         }
 
+        private const int BalloonTimeout = 5000;
+
         private static void ShowFallback(string title, string message, Action click) {
             try {
                 var text = title + Environment.NewLine + message;
@@ -77,11 +80,26 @@ namespace FirstFloor.ModernUI.Windows {
                     notifyIcon.BalloonTipClicked += (sender, args) => { click.InvokeInMainThreadAsync(); };
                 }
 
-                notifyIcon.ShowBalloonTip(5000, title, message, ToolTipIcon.Info);
-                notifyIcon.BalloonTipClosed += (sender, args) => {
+                var removed = false;
+
+                void Remove() {
+                    if (removed) return;
+                    removed = true;
                     notifyIcon.Visible = false;
                     notifyIcon.Dispose();
+                }
+
+                notifyIcon.ShowBalloonTip(BalloonTimeout, title, message, ToolTipIcon.Info);
+                notifyIcon.BalloonTipClosed += (sender, args) => Remove();
+
+                // Wine only ever sends NIN_SELECT, so BalloonTipClosed never arrives and the icon would
+                // stay in the tray for good
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(BalloonTimeout + 1000) };
+                timer.Tick += (sender, args) => {
+                    timer.Stop();
+                    Remove();
                 };
+                timer.Start();
             } catch (Exception e) {
                 Logging.Error(e);
             }
