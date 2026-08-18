@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Windows.Forms;
+using AcTools.Windows;
 using FirstFloor.ModernUI.Commands;
 using FirstFloor.ModernUI.Helpers;
 using FirstFloor.ModernUI.Presentation;
@@ -24,7 +25,9 @@ namespace AcManager.Tools.Helpers {
             private bool? _cefWinForms;
 
             public bool CefWinForms {
-                get => _cefWinForms ?? (_cefWinForms = ValuesStorage.Get("Settings.PluginsSettings.CefWinForms", true)).Value;
+                // Windowed mode is much faster, but it puts Chromium on the prefix’s own compositing path.
+                // Off-screen rendering is the only mode ever reported to work under Wine
+                get => _cefWinForms ?? (_cefWinForms = ValuesStorage.Get("Settings.PluginsSettings.CefWinForms", !WineHelper.IsOnWine)).Value;
                 set {
                     if (Equals(value, _cefWinForms)) return;
                     _cefWinForms = value;

@@ -10,7 +10,7 @@
 
   <StackPanel x:Key="PluginSettings.CefSharp" Style="{StaticResource SettingsPanel}" Margin="20 8 0 0" DataContext="{x:Static t:SettingsHolder.Plugins}">
     <CheckBox IsChecked="{Binding CefWinForms}"
-        ToolTip="Much, much faster, but browser can’t be semi-transparent, so you might want to use some custom CSS for SRS to fix it">
+        ToolTip="Much, much faster, but browser can’t be semi-transparent, so you might want to use some custom CSS for SRS to fix it. Off by default under Wine, where only off-screen rendering works">
       <Label Content="WinForms mode (restart might be required)" />
     </CheckBox>
 
