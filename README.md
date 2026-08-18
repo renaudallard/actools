@@ -131,7 +131,9 @@ prefix boundary, so a split setup silently reports every race as cancelled.
 
  - Keyboard input languages are checked before they are used. Wine reports the user locale in place of a
    keyboard layout, and locales without an LCID of their own, such as `en-BE`, have no matching culture,
-   which used to take the app down as soon as a text field got focus.
+   which used to take the app down as soon as a text field got focus. The same failure coming from the few
+   places that read the layout list directly, such as the Ctrl+Right Shift gesture in a text field, is
+   logged and ignored.
 
  - Failures in optional pieces (light probes, the chase camera preview, the showroom overlay) are contained
    instead of taking the app down.

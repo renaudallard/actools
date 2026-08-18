@@ -14,6 +14,7 @@ using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using AcManager.AcSound;
 using AcManager.Assets;
 using AcManager.ContentRepair;
@@ -166,6 +167,7 @@ namespace AcManager {
                 // Wine reports the user locale in place of a keyboard layout, and WPF turns that into a
                 // culture as soon as a text field takes focus
                 SafeInputLanguageSource.Install();
+                app.DispatcherUnhandledException += OnMissingLayoutCulture;
             }
 
             // Some sort of safe mode
@@ -209,6 +211,18 @@ namespace AcManager {
                 }
             }
             app.Run();
+        }
+
+        // Wine reports locales without an LCID of their own as LOCALE_CUSTOM_UNSPECIFIED
+        private const int LocaleCustomUnspecified = 0x1000;
+
+        private static void OnMissingLayoutCulture(object sender, DispatcherUnhandledExceptionEventArgs args) {
+            // A few places, such as the Ctrl+Right Shift gesture in text fields, read the keyboard layout
+            // list and build cultures out of it directly, with nothing to replace and nothing to catch
+            if (args.Exception is CultureNotFoundException e && e.InvalidCultureId == LocaleCustomUnspecified) {
+                Logging.Warning("Keyboard layout has no culture: " + e.Message);
+                args.Handled = true;
+            }
         }
 
         private static void OnFatalError(object o, FatalErrorEventArgs args) {
