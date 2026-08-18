@@ -69,15 +69,26 @@ namespace AcManager.DiscordRpc {
             }
         }
 
+        // Discord runs outside the prefix under Wine, so its named pipes are never there and reconnection
+        // would otherwise write the same two lines to the log every minute for the whole session
+        private const int QuietAfterFailures = 4;
+
         private async Task RunAsync() {
             var delay = OptionMinReconnectionDelay;
+            var failures = 0;
 
             while (!IsDisposed) {
+                var quiet = failures >= QuietAfterFailures;
+
                 try {
-                    Utils.Log("(Re)creating connection…");
+                    if (!quiet) {
+                        Utils.Log("(Re)creating connection…");
+                    }
+
                     using (var connection = new DiscordConnection(_handler)) {
                         await connection.LaunchAsync(_clientId).ConfigureAwait(false);
                         delay = OptionMinReconnectionDelay;
+                        failures = 0;
 
                         _currentConnection = connection;
                         if (_currentPresence != null) {
@@ -88,13 +99,25 @@ namespace AcManager.DiscordRpc {
                         if (connection.IsDisposed) continue;
                     }
                 } catch (TimeoutException e) {
-                    Utils.Log(e.Message);
+                    if (!quiet) {
+                        Utils.Log(e.Message);
+                    }
                 } catch (IOException e) {
-                    Utils.Warn(e.Message);
+                    if (!quiet) {
+                        Utils.Warn(e.Message);
+                    }
                 } catch (DiscordException e) {
-                    Utils.Warn(e.Message);
+                    if (!quiet) {
+                        Utils.Warn(e.Message);
+                    }
                 } catch (Exception e) {
-                    Utils.Warn(e.ToString());
+                    if (!quiet) {
+                        Utils.Warn(e.ToString());
+                    }
+                }
+
+                if (++failures == QuietAfterFailures) {
+                    Utils.Log("Discord is not answering, keeping quiet from now on");
                 }
 
                 _currentConnection = null;
