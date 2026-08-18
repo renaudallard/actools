@@ -170,14 +170,28 @@ namespace AcManager.Tools.Objects {
                     HardLinks = FileUtils.GetFileSiblingHardLinks(x, mountPoint)
                 }).ToList();
 
+                // Hard links can’t be listed everywhere, Wine being one such case. Where they are unknown,
+                // fall back to comparing the files themselves so identical ones are not copied again
+                bool SameContent(string first, string second) {
+                    try {
+                        var a = new FileInfo(first);
+                        var b = new FileInfo(second);
+                        return a.Exists && b.Exists && a.Length == b.Length && a.LastWriteTimeUtc == b.LastWriteTimeUtc;
+                    } catch (Exception e) {
+                        Logging.Warning(e);
+                        return false;
+                    }
+                }
+
                 // Cleaning up overlapping files
                 var recycle = new List<string>();
                 foreach (var p in toInstall) {
                     var existing = files.FirstOrDefault(x => FileUtils.ArePathsEqual(x.Filename, p.Value));
                     if (existing != null) {
-                        if (existing.HardLinks.Any(x => FileUtils.ArePathsEqual(x, p.Key))) {
+                        var links = existing.HardLinks;
+                        if (links == null ? SameContent(existing.Filename, p.Key) : links.Any(x => FileUtils.ArePathsEqual(x, p.Key))) {
                             // Already correct version, do not touch
-                        } else if (existing.HardLinks.Any(x => !FileUtils.ArePathsEqual(Path.GetDirectoryName(x) ?? string.Empty, directory))) {
+                        } else if (links != null && links.Any(x => !FileUtils.ArePathsEqual(Path.GetDirectoryName(x) ?? string.Empty, directory))) {
                             Try(() => File.Delete(existing.Filename), ref totalFailures);
                         } else {
                             recycle.Add(existing.Filename);
@@ -187,7 +201,7 @@ namespace AcManager.Tools.Objects {
 
                 foreach (var unnecessary in files.Where(x => toInstall.Keys.All(y => !FileUtils.ArePathsEqual(x.Filename, y)))) {
                     // if (unnecessary.HardLinks.Any(x => !FileUtils.ArePathsEqual(Path.GetDirectoryName(x), directory))) {
-                    if (unnecessary.HardLinks.Length > 1) {
+                    if (unnecessary.HardLinks?.Length > 1) {
                         Try(() => File.Delete(unnecessary.Filename), ref totalFailures);
                     } else {
                         recycle.Add(unnecessary.Filename);

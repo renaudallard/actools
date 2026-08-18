@@ -601,14 +601,24 @@ namespace AcTools.Utils {
             return sb.ToString();
         }
 
-        [NotNull]
+        private const int ErrorInvalidFunction = 1;
+        private const int ErrorCallNotImplemented = 120;
+
+        /// <summary>
+        /// Returns null when hard links can’t be enumerated at all, which is not the same as a file
+        /// having none of them. Wine, for one, does not implement the enumeration.
+        /// </summary>
+        [CanBeNull]
         public static string[] GetFileSiblingHardLinks([NotNull] string filename, [NotNull] string mountPoint) {
             var result = new List<string>();
             try {
                 uint stringLength = 256;
                 var sb = new StringBuilder((int)stringLength);
                 var findHandle = Kernel32.FindFirstFileNameW(filename, 0, ref stringLength, sb);
-                if (findHandle.ToInt32() == -1) return new string[0];
+                if (findHandle.ToInt32() == -1) {
+                    var error = Marshal.GetLastWin32Error();
+                    return error == ErrorCallNotImplemented || error == ErrorInvalidFunction ? null : new string[0];
+                }
                 try {
                     do {
                         result.Add(mountPoint + sb.ToString().Substring(1));
