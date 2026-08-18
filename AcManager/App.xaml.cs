@@ -162,6 +162,12 @@ namespace AcManager {
 
             var app = new App();
 
+            if (WineHelper.IsOnWine) {
+                // Wine reports the user locale in place of a keyboard layout, and WPF turns that into a
+                // culture as soon as a text field takes focus
+                SafeInputLanguageSource.Install();
+            }
+
             // Some sort of safe mode
             if (forceSoftwareRenderingMode && !softwareRenderingModeWasEnabled) {
                 Toast.Show("Safe mode", "Failed to start the last time, now CM uses software rendering", () => {

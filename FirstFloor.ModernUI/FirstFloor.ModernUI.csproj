@@ -157,6 +157,7 @@
     <Compile Include="Helpers\HorizontalScrollViewerBehavior.cs" />
     <Compile Include="Helpers\IStorage.cs" />
     <Compile Include="Helpers\MixedDataTemplateSelector.cs" />
+    <Compile Include="Helpers\SafeInputLanguageSource.cs" />
     <Compile Include="Helpers\ScreenInterrogatory.cs" />
     <Compile Include="Helpers\Stored.cs" />
     <Compile Include="Helpers\StoredValue.cs" />
