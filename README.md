@@ -118,7 +118,11 @@ prefix boundary, so a split setup silently reports every race as cancelled.
    Direct3D 9 and no Metal‑based translation layer implements it. It stays a normal setting, so it can be
    turned off in Settings/Appearance. There is no need to rename the executable to include *safe* anymore.
 
- - Window transparency is disabled, and image decoding is serialised, both only under Wine.
+ - Window transparency defaults to disabled and the built‑in browser defaults to off‑screen rendering, both
+   only under Wine, and both remain ordinary settings that can be changed back.
+
+ - Image decoding is serialised, symlinked content folders are followed, and hard links are treated as
+   unknown rather than absent, since Wine cannot enumerate them.
 
  - Failures in optional pieces (light probes, the chase camera preview, the showroom overlay) are contained
    instead of taking the app down.
@@ -136,3 +140,7 @@ Do not set `HideWineExports=Y`. Some guides suggest it so Custom Shaders Patch b
 but it also hides Wine from Content Manager and turns off everything listed above.
 
 Force feedback does not work: Wine's macOS input backend has no haptics at all.
+
+If some server cannot be reached because its certificate does not validate in a bare prefix, start the app
+with `--ignore-invalid-certificates`. Certificates are checked by default, and updates are always refused
+unless they carry the expected signing certificate.
