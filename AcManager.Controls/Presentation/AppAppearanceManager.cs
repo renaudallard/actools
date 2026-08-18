@@ -182,7 +182,7 @@ namespace AcManager.Controls.Presentation {
                 SlideshowChangeRate = ValuesStorage.Get(KeySlideshowChangeRate, SlideshowChangeRates.ElementAt(3).Value);
                 IdealFormattingMode = ValuesStorage.Get<bool?>(KeyIdealFormattingMode);
                 BlurImageViewerBackground = ValuesStorage.Get<bool>(KeyBlurImageViewerBackground);
-                DisallowTransparency = ValuesStorage.Get<bool>(KeyDisallowTransparency);
+                DisallowTransparency = ValuesStorage.Get(KeyDisallowTransparency, WineHelper.IsOnWine);
                 SmallFont = ValuesStorage.Get<bool>(KeySmallFont);
                 LargerTitleLinks = ValuesStorage.Get<bool>(KeyLargerTitleLinks);
                 BoldTitleLinks = ValuesStorage.Get<bool>(KeyBoldTitleLinks);

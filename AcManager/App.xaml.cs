@@ -860,7 +860,7 @@ namespace AcManager {
                 ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(60000));
                 ItemsControl.IsTextSearchCaseSensitiveProperty.OverrideMetadata(typeof(ComboBox), new FrameworkPropertyMetadata(true));
 
-                if (AppAppearanceManager.Instance.DisallowTransparency || WineHelper.IsOnWine) {
+                if (AppAppearanceManager.Instance.DisallowTransparency) {
                     DisableTransparencyHelper.Disable();
                 }
             } catch (Exception e) {
