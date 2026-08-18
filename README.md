@@ -146,6 +146,10 @@ but it also hides Wine from Content Manager and turns off everything listed abov
 
 Force feedback does not work: Wine's macOS input backend has no haptics at all.
 
+Automatic updates are off by default in this fork. Its builds carry changes upstream does not have and are
+numbered below upstream releases, so an automatic update would quietly replace it with a stock build. Set a
+period in Settings/General to turn it back on; checking by hand works either way.
+
 If some server cannot be reached because its certificate does not validate in a bare prefix, start the app
 with `--ignore-invalid-certificates`. Certificates are checked by default, and updates are always refused
 unless they carry the expected signing certificate.

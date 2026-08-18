@@ -82,8 +82,10 @@ namespace AcManager.Tools.Helpers {
             public PeriodEntry UpdatePeriod {
                 get {
                     var saved = ValuesStorage.Get<TimeSpan?>("Settings.CommonSettings.UpdatePeriod");
-                    return _updatePeriod ?? (_updatePeriod = Periods.FirstOrDefault(x => x.TimeSpan == saved) ??
-                            Periods.ElementAt(4));
+                    // This fork carries changes upstream does not have, and its builds are numbered below
+                    // upstream releases, so an automatic update would quietly replace it with a stock build.
+                    // Checking for updates by hand still works.
+                    return _updatePeriod ?? (_updatePeriod = Periods.FirstOrDefault(x => x.TimeSpan == saved) ?? PeriodDisabled);
                 }
                 set {
                     if (Equals(value, _updatePeriod)) return;
