@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Unpack bundled packages
+        shell: pwsh
+        run: Expand-Archive -Path packages.zip -DestinationPath . -Force
+
+      # Windows runners ship the 4.8 targeting pack, not 4.5.2. This package carries
+      # the 4.5.2 reference assemblies and is wired in through TargetFrameworkRootPath.
+      - name: Fetch .NET Framework 4.5.2 reference assemblies
+        run: nuget install Microsoft.NETFramework.ReferenceAssemblies.net452 -Version 1.0.3 -OutputDirectory refs
+
+      - name: Restore
+        continue-on-error: true
+        run: nuget restore AcManager.sln
+
+      - name: Build
+        run: >
+          msbuild AcManager\AcManager.csproj
+          /p:Configuration=Release
+          /p:Platform=x86
+          /p:TargetFrameworkRootPath=${{ github.workspace }}\refs\Microsoft.NETFramework.ReferenceAssemblies.net452.1.0.3\build\
+          /verbosity:minimal
+          /nologo
+
+      - name: Upload build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-manager-x86
+          path: AcManager/bin/x86/Release/
+          if-no-files-found: warn
