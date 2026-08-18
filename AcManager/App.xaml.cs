@@ -226,7 +226,13 @@ namespace AcManager {
 
         private static void TryTls13() {
             try {
-                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+                if (AppArguments.GetBool(AppFlag.IgnoreInvalidCertificates)) {
+                    // Used to be unconditional, which left the app trusting any certificate at all, and in a
+                    // Wine prefix without a root store that was the only check left standing
+                    Logging.Warning("Certificate validation is off");
+                    ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+                }
+
                 ServicePointManager.Expect100Continue = true;
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
                         | (SecurityProtocolType)12288

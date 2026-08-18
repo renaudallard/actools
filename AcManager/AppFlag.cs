@@ -1,4 +1,4 @@
-namespace AcManager {
+﻿namespace AcManager {
     /// <summary>
     /// Taken from command line arguments or from Arguments.txt in app’s data
     /// directory (one argument per line).
@@ -589,6 +589,13 @@ namespace AcManager {
         /// Example: --no-proxy.
         /// </summary>
         NoProxy,
+
+        /// <summary>
+        /// Accept any HTTPS certificate, including expired and self-signed ones. Disabled by default.
+        /// Only use it if some server you need can’t be reached otherwise.
+        /// Example: --ignore-invalid-certificates.
+        /// </summary>
+        IgnoreInvalidCertificates,
 
         /// <summary>
         /// Nothing to see here, just some thing with the names.

@@ -18,6 +18,7 @@ using AcManager.Tools.Data;
 using AcManager.Tools.Helpers;
 using AcManager.Tools.Helpers.Api;
 using AcTools;
+using AcTools.Utils;
 using AcTools.Utils.Helpers;
 using FirstFloor.ModernUI.Commands;
 using FirstFloor.ModernUI.Helpers;
@@ -290,12 +291,14 @@ namespace AcManager.Tools.Miscellaneous {
             }
         }
 
-        private static void CheckSignatureOrThrow(string filename) {
+        private static void CheckPinnedCertificateOrThrow(string filename) {
             var certificate = X509Certificate.CreateFromSignedFile(filename);
             if (!new X509Certificate2(certificate.Handle).RawData.EqualsTo(Decompress(Convert.FromBase64String(Certificate)))) {
                 throw new Exception("Signature is wrong");
             }
+        }
 
+        private static void CheckAuthenticodeOrThrow(string filename) {
             var result = AuthenticodeTools.IsTrusted(filename);
             switch (result) {
                 case WintrustResult.Success:
@@ -316,12 +319,26 @@ namespace AcManager.Tools.Miscellaneous {
             }
         }
 
+        /// <summary>
+        /// Throws when the update is not signed with the expected certificate, and removes the file so it
+        /// won’t be picked up again. The certificate is pinned, so this holds even where the system has no
+        /// root store and no working Authenticode, a fresh Wine prefix for instance.
+        /// </summary>
         private static void CheckSignature(string filename) {
             try {
-                CheckSignatureOrThrow(filename);
-                Logging.Write("Update: signature is fine");
+                CheckPinnedCertificateOrThrow(filename);
             } catch (Exception) {
-                Logging.Unexpected("Update: signature is wrong");
+                Logging.Error("Update: unexpected certificate, refusing to run it");
+                FileUtils.TryToDelete(filename);
+                throw;
+            }
+
+            try {
+                CheckAuthenticodeOrThrow(filename);
+                Logging.Write("Update: signature is fine");
+            } catch (Exception e) {
+                // Certificate above already matched, and wintrust is not available everywhere
+                Logging.Warning("Update: can’t verify Authenticode signature: " + e.Message);
             }
         }
 
