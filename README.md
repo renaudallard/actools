@@ -89,6 +89,11 @@ Set of utils and apps designed for Assetto Corsa. Some obsolete projects are mov
 
  - You might need to install DirectX SDK to rebuild [AcTools.Render/Shaders/Shaders.tt](https://github.com/gro-ove/actools/blob/master/AcTools.Render/Shaders/Shaders.tt). But, just in case, built *Shaders.cs* and *Shaders.resources* are already included. Also, it takes quite a long time to rebuild those shaders, up to 5–10 minutes on my PC.
 
+ - This fork builds on GitHub Actions (`.github/workflows/build.yml`): MSBuild on a Windows runner, x86
+   Release, with the 4.5.2 reference assemblies pulled from NuGet because the runners only carry the 4.8
+   targeting pack. The bundled *packages.zip* is unpacked in place of a full restore. The resulting build
+   is kept as a run artifact.
+
  - Feel free to [contact me](https://trello.com/c/w5xT6ssZ/49-contacts) anytime. I don’t have any experience with open-source projects, but I’d be glad to learn.
 
 # Running under Wine (CrossOver on macOS, Proton and plain Wine on Linux)
