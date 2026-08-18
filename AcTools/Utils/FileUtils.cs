@@ -195,41 +195,63 @@ namespace AcTools.Utils {
                     new string[0];
         }
 
+        /// <summary>
+        /// Wine reports mount points and symlinked directories as reparse points, so skipping them there
+        /// would hide whole content folders. Depth is capped instead, so a loop of links still terminates.
+        /// </summary>
+        private static readonly bool FollowReparsePoints = WineHelper.IsOnWine;
+
+        private const int MaxRecursionDepth = 32;
+
+        private static IEnumerable<string> DirectoriesToVisit(string[] dirs) {
+            foreach (var t in dirs) {
+                FileAttributes attributes;
+                try {
+                    attributes = new DirectoryInfo(t).Attributes;
+                } catch (Exception) {
+                    continue;
+                }
+
+                if ((attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0) continue;
+                if (!FollowReparsePoints && (attributes & FileAttributes.ReparsePoint) != 0) continue;
+                yield return t;
+            }
+        }
+
         [NotNull]
         public static IEnumerable<string> GetFilesRecursive(string path, string searchPattern = null) {
             var queue = new Queue<string>();
             queue.Enqueue(path);
 
-            while (queue.Count > 0) {
-                path = queue.Dequeue();
+            for (var depth = 0; queue.Count > 0 && depth < MaxRecursionDepth; depth++) {
+                for (var i = queue.Count; i > 0; i--) {
+                    path = queue.Dequeue();
 
-                string[] dirs = null;
-                try {
-                    dirs = Directory.GetDirectories(path);
-                } catch (Exception) {
-                    // ignored
-                }
-
-                if (dirs != null) {
-                    foreach (var t in from t in dirs
-                                      let attributes = new DirectoryInfo(t).Attributes
-                                      where (attributes & (FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System)) == 0
-                                      select t) {
-                        queue.Enqueue(t);
+                    string[] dirs = null;
+                    try {
+                        dirs = Directory.GetDirectories(path);
+                    } catch (Exception) {
+                        // ignored
                     }
-                }
 
-                string[] files = null;
-                try {
-                    files = searchPattern == null ? Directory.GetFiles(path) : Directory.GetFiles(path, searchPattern);
-                } catch (Exception) {
-                    // ignored
-                }
+                    if (dirs != null) {
+                        foreach (var t in DirectoriesToVisit(dirs)) {
+                            queue.Enqueue(t);
+                        }
+                    }
 
-                if (files == null) continue;
+                    string[] files = null;
+                    try {
+                        files = searchPattern == null ? Directory.GetFiles(path) : Directory.GetFiles(path, searchPattern);
+                    } catch (Exception) {
+                        // ignored
+                    }
 
-                foreach (var t in files) {
-                    yield return t;
+                    if (files == null) continue;
+
+                    foreach (var t in files) {
+                        yield return t;
+                    }
                 }
             }
         }
@@ -239,26 +261,25 @@ namespace AcTools.Utils {
             var queue = new Queue<string>();
             queue.Enqueue(path);
 
-            while (queue.Count > 0) {
-                path = queue.Dequeue();
+            for (var depth = 0; queue.Count > 0 && depth < MaxRecursionDepth; depth++) {
+                for (var i = queue.Count; i > 0; i--) {
+                    path = queue.Dequeue();
 
-                string[] dirs = null;
-                try {
-                    dirs = Directory.GetDirectories(path);
-                } catch (Exception) {
-                    // ignored
-                }
-
-                if (dirs != null) {
-                    foreach (var t in from t in dirs
-                                      let attributes = new DirectoryInfo(t).Attributes
-                                      where (attributes & (FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System)) == 0
-                                      select t) {
-                        queue.Enqueue(t);
+                    string[] dirs = null;
+                    try {
+                        dirs = Directory.GetDirectories(path);
+                    } catch (Exception) {
+                        // ignored
                     }
 
-                    foreach (var t in dirs) {
-                        yield return t;
+                    if (dirs != null) {
+                        foreach (var t in DirectoriesToVisit(dirs)) {
+                            queue.Enqueue(t);
+                        }
+
+                        foreach (var t in dirs) {
+                            yield return t;
+                        }
                     }
                 }
             }
