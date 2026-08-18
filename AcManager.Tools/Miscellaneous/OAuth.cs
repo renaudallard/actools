@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -38,6 +39,30 @@ namespace AcManager.Tools.Miscellaneous {
     public static class OAuth {
         private const string SubUrl = "Temporary_Listen_Addresses/Cm_Auth";
 
+        private static bool CanListen(string prefix) {
+            try {
+                var listener = new HttpListener();
+                listener.Prefixes.Add(prefix);
+                listener.Start();
+                listener.Stop();
+                listener.Close();
+                return true;
+            } catch (Exception e) {
+                Logging.Debug($"Can’t listen on {prefix}: {e.Message}");
+                return false;
+            }
+        }
+
+        private static int GetFreePort() {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            try {
+                return ((IPEndPoint)listener.LocalEndpoint).Port;
+            } finally {
+                listener.Stop();
+            }
+        }
+
         private static string DefaultResponseCallback(bool success, string key) {
             key = key != null ? $"CM Steam ID Helper: {key}" : "Content Manager";
             return string.Format($@"<!DOCTYPE html><html><head><title>{key}</title><base href=""{InternalUtils.MainApiDomain}/"">
@@ -68,9 +93,17 @@ namespace AcManager.Tools.Miscellaneous {
             if (!serverless) {
                 var tcs = new TaskCompletionSource<OAuthCode>();
 
-                // Try to use web server and localhost to redirect
+                // Try to use web server and localhost to redirect. Port 80 needs no extra privileges on
+                // Windows because Temporary_Listen_Addresses is reserved there by default, while a Wine
+                // prefix cannot bind anything below 1024, so fall back to an ephemeral port
                 WebServer server = null;
-                var redirectUri = "http://localhost/" + SubUrl;
+                var port = 80;
+                if (!CanListen($"http://+:80/{SubUrl}")) {
+                    port = GetFreePort();
+                    Logging.Debug($"Port 80 is not available, listening on {port} instead");
+                }
+
+                var redirectUri = port == 80 ? $"http://localhost/{SubUrl}" : $"http://localhost:{port}/{SubUrl}";
 
                 async void DisposeLater() {
                     await Task.Delay(2000);
@@ -81,8 +114,8 @@ namespace AcManager.Tools.Miscellaneous {
                     server = null;
                 }
 
-                Logging.Debug("Prepating web-server, URL prefix: http://+:80/" + SubUrl);
-                server = new WebServer("http://+:80/" + SubUrl, new Log(e => {
+                Logging.Debug($"Preparing web-server, URL prefix: http://+:{port}/{SubUrl}");
+                server = new WebServer($"http://+:{port}/{SubUrl}", new Log(e => {
                     tcs.TrySetException(e);
                     DisposeLater();
                 }), Unosquare.Labs.EmbedIO.RoutingStrategy.Wildcard);
